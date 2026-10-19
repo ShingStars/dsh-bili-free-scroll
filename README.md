@@ -1,3 +1,5 @@
+> **⚠ 已被取代**：这份「两个插件合并成一个包」的方案在实测中被发现不稳（大 client bundle + 宿主半边启动路径，容易出现 web boot: entry did not activate）。现在改为在 dsh-bili-scroll 上只加模型选择，见 [ShingStars/dsh-bili-models](https://github.com/ShingStars/dsh-bili-models)。本仓库保留作历史参考。
+
 # dsh-bili-free-scroll
 
 一个 DSH（DeepSeek Harness）插件，把两件事装进同一个包：
