@@ -157,6 +157,40 @@ export function apply(ctx, config) {
   /** 四渠道白名单：其余 9 个渠道的 adapter 在注册那一刻被挡掉（pack.js 原样，见 NOTICE）。 */
   const CHANNEL_WHITELIST = new Set(['lobsterai', 'qodercn', 'cline', 'raccoon'])
 
+  /**
+   * 渠道包自带一个「本机 OpenAI 兼容网关」（`127.0.0.1:8326`，默认**开启**，
+   * 见 pack.js 的 `gatewayEnabled: Schema.boolean().default(true)` 与
+   * `mountOpenAiGateway()`）。合并版不提供任何对外网关，所以挂载渠道包之前把
+   * `$DSH_HOME/channel-pack/state.json` 里的 `gatewayEnabled` 落成 `false`：
+   * 只改这一个键，账号池 / 额度 / 锁定表原样保留。
+   *
+   * 用文件而不是 `pool.setGatewayEnabled(false)`：后者只改内存并异步落盘，
+   * 而 `mountOpenAiGateway()` 在 `pack.apply()` 内同步读开关决定是否启动，
+   * 那时 pool 还没交到我们手上。写不进去也不该拖垮渠道包 —— 整段吞异常。
+   */
+  function disablePackGateway(root) {
+    try {
+      const override = String(process.env.DSH_CHANNEL_PACK_STATE_DIR ?? '').trim()
+      let home = override
+      if (home === '') {
+        let profileHome = ''
+        try { profileHome = String(root.reflect?.get?.('profileContext')?.home ?? '') } catch { profileHome = '' }
+        home = profileHome !== ''
+          ? profileHome
+          : (String(process.env.DSH_HOME ?? '').trim() || path.join(os.homedir(), '.dsh'))
+      }
+      const dir = path.join(home, 'channel-pack')
+      const file = path.join(dir, 'state.json')
+      let doc = {}
+      try { doc = JSON.parse(fs.readFileSync(file, 'utf8')) } catch { doc = {} }
+      if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) doc = {}
+      if (doc.gatewayEnabled === false) return
+      doc.gatewayEnabled = false
+      fs.mkdirSync(dir, { recursive: true })
+      fs.writeFileSync(file, JSON.stringify(doc, null, 2), 'utf8')
+    } catch { /* 网关开关写不进去也不该拖垮渠道包 */ }
+  }
+
   // A hot reload re-enters apply with fresh stores; the generation counter lives
   // on globalThis so the new instance knows it replaced a predecessor, and does
   // the post-swap bookkeeping itself (the old closure must not touch stores
@@ -1070,6 +1104,8 @@ export function apply(ctx, config) {
        *    不会被这层筛掉。
        */
       const llm = scoped.llm
+      // 渠道包自带的本机网关默认是开的 —— 先落成关闭，再让它挂载（见函数注释）。
+      disablePackGateway(scoped)
       const originalRegister = llm.registerAdapter
       llm.registerAdapter = function (providers, adapter) {
         const ids = Array.isArray(providers) ? providers : [providers]

@@ -26,7 +26,7 @@
 
 - 渠道只保留 LobsterAI / Qoder 中国版 / Cline / Raccoon（源码与 UI 裁掉其余九个；
   `pack.js` 保持原样，未保留渠道不注册、不显示、调不到）。
-- 去掉对外网关（forward / chan-relay）与 LAN relay / egress。
+- 去掉对外网关（forward / chan-relay）与 LAN relay / egress，并关闭渠道包自带的本机 OpenAI 网关（`127.0.0.1:8326`）。
 - 去掉赞助位、推荐项目页、公告中心、Star 解锁页、网关页。
 
 ### 已知限制

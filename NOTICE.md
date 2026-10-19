@@ -39,7 +39,7 @@
      `pack.js` 是上游 esbuild 产物，**保持逐字节原样**（离线无法重建，见 build/README），
      未保留渠道的代码仍在产物里但不会被注册、不会出现在界面、也调不到。
   2. 在 `pack.apply()` 之前包一层 `registerAdapter`，只放行上述四个 provider id；
-  3. 关闭两个对外网关（`forward` 与 `chan-relay`）以及 LAN relay / egress；
+  3. 关闭两个对外网关（`forward` 与 `chan-relay`）以及 LAN relay / egress；并把渠道包自带的`本机 OpenAI 网关`（`127.0.0.1:8326`，上游默认开启）写死为关闭（`channel-pack/state.json` 的 `gatewayEnabled: false`）；
   4. 关闭自更新（`PluginUpdater` 换成 stub）—— 否则上游 release 会把本合并版覆盖成
      `dsh-our-free-model` 本体；
   5. 数据目录由 `$DSH_HOME/our-free-model/` 改为 `$DSH_HOME/bili-free-scroll/models/`；
