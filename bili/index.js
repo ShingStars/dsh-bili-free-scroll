@@ -263,6 +263,16 @@ export function apply(ctx, config) {
   const CFG_SIG = ['perDay', 'mentionName', 'replyToComments', 'overlayMcp']   // 靠这几个键认出"哪一行是我们"
   let settingsRow = { at: 0, row: null }
   /**
+   * ⚠️ 2026-10-20（v1.0.1 用户崩溃的真凶，上游 0.1.11 同样存在）：
+   *   loadCfg 里 `hostDiff = diff` / `lastDiffSig = sig` 这两个变量**从来没声明过** ——
+   *   ESM 严格模式下给未声明变量赋值直接抛 `ReferenceError: hostDiff is not defined`。
+   *   只要宿主 settings.describe() 能认出我们那一行（桌面 profile 一定认得出），apply 就当场炸，
+   *   fiber 停在 loading ⇒ 前端启动自检报 `web boot: 1 entry did not activate` ⇒ **整个 DSH 起不来**。
+   *   headless 下 describe() 没这一行、走不到这里，所以一直没暴露。
+   */
+  let hostDiff = []
+  let lastDiffSig = ''
+  /**
    * 我们那一行设置表单（拿不到就返回 null ⇒ 一切按 config.json 来）。
    * ⚠️ DSH 自带的「插件设置」页**不需要注册** —— 老代码那句 `ctx.settings.register(...)` 是个不存在的方法，
    *    每次都抛 TypeError、被 catch 吞掉（2026-10-17 读宿主源码 @deepseek-ai/dsh-settings 才明白）：

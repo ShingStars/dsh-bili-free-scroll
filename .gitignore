@@ -11,3 +11,4 @@ Thumbs.db
 bili/out/
 bili/config.json
 models/settings.json
+tools/cdp-*.mjs

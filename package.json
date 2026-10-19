@@ -1,6 +1,6 @@
 {
   "name": "dsh-bili-free-scroll",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DSH 插件：每天替你刷一轮 B站（读字幕、写日报、@你），并自带四个免费模型渠道（LobsterAI / Qoder 中国版 / Cline / Raccoon）—— 登录一次，bili 的每一轮都能用这些模型跑。",
   "keywords": [
     "dsh",
@@ -32,6 +32,8 @@
   "files": [
     "index.js",
     "client.js",
+    "client.bili.js",
+    "client.models.js",
     "cordis.patch.yml",
     "bili",
     "models",
@@ -70,7 +72,6 @@
     },
     "client": {
       "platform": "web",
-      "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-client-runtime",
         "@deepseek-ai/dsh-client-ui-settings",

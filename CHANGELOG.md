@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.0.1 — 2026-10-20
+
+### 修复（严重：装好后 DSH 起不来）
+
+- **`ReferenceError: hostDiff is not defined`** —— `bili/index.js` 的 `loadCfg()` 里
+  `hostDiff` / `lastDiffSig` 两个变量从未声明，严格模式下给未声明变量赋值直接抛错。
+  只要宿主 `settings.describe()` 能认出插件那一行（桌面 profile 一定认得出），
+  host 半边的 `apply` 就当场抛异常、fiber 停在 `loading`，前端启动自检报
+  `web boot: 1 entry did not activate` 并把整个桌面壳带崩。
+  headless 下 `describe()` 没有那一行、走不到这段，所以此前所有验证都没暴露。
+  **上游 dsh-bili-scroll 0.1.11 同样存在这个 bug**（同位置、同写法），本版一并修掉。
+- 两条半边改成**嵌套 `ctx.inject` + 各自 try/catch**：任何一边挂不上只记日志，
+  不再拖累另一条，也不会让 fiber 停在 loading 拖垮启动自检。
+- 修好后 bili 设置页不再卡在「读设置中…」（此前是 apply 抛错、HTTP 路由根本没挂上）。
+
+### 优化
+
+- **启动路径去重**：client 从 535 KB 单文件拆成 3.2 KB 薄壳 + `client.bili.js`（43 KB）/
+  `client.models.js`（495 KB）两个按需 chunk，设置页打开时才加载；`dsh.client.immediately`
+  不再置 true。启动时不再需要物化 500 KB 的 factory bundle。
+
 ## v1.0.0 — 2026-10-19
 
 首个版本：把 [dsh-bili-scroll](https://github.com/c1overzz/dsh-bili-scroll) 0.1.11 与
